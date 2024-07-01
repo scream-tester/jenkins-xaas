@@ -1,0 +1,26 @@
+pipeline {
+    // Runs the pipeline on any available agent/node
+    agent any
+
+    environment {
+        // Sets an environment variable BRANCH from the parameter 'BRANCH_NAME_PARAM'
+        BRANCH_NAME = "${BRANCH_NAME_PARAM}"
+        BUILD_TOOL = "${BUILD_TOOL_PARAM}"
+        BUILD_STEPS = "${BUILD_STEPS_PARAM}"
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    // Logs which build tool is being used (e.g., Maven, Gradle)
+                    echo "Using ${BUILD_TOOL}"
+                    
+                    // Executes the build command using the provided tool and steps
+                    // Example: mvn clean install OR gradle build
+                    sh("${BUILD_TOOL} ${BUILD_STEPS}")
+                }
+            }
+        }
+    }
+}
