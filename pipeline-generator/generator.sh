@@ -2,7 +2,7 @@
 set -e
 
 CONFIG_FILE="configs/sample_config.env"
-TEMPLATE_FILE="templates/Jenkinsfile.template"
+TEMPLATE_FILE="templates/basic/Jenkinsfile.tmpl"
 OUTPUT_FILE="output/Jenkinsfile"
 
 [[ ! -f "$CONFIG_FILE" ]] && { echo "[Error]: Config file not found"; exit 1; }
