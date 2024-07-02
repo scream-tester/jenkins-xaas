@@ -1,0 +1,6 @@
+# Scripts and templates should use LF in all environments
+*.sh     text eol=lf
+*.groovy text eol=lf
+*.tmpl   text eol=lf
+*.yaml   text eol=lf
+*.yml    text eol=lf
