@@ -1,0 +1,69 @@
+// Jenkins Declarative Pipeline Template
+// Purpose: Dynamically generated pipeline for client-specific CI/CD
+// This template uses placeholder variables replaced at generation time.
+
+pipeline {
+    agent any // Run on any available agent node
+
+    // Global pipeline options
+    options { 
+        timestamps() // Prepend timestamps to console output
+    }
+
+    // Environment variables (set from parameters or config file)
+    environment {
+        BRANCH_NAME     = "${BRANCH_NAME_PARAM}"
+        REPO_URL        = "${REPO_URL_PARAM}"
+        BUILD_TOOL      = "${BUILD_TOOL_PARAM}"
+        BUILD_STEPS     = "${BUILD_STEPS_PARAM}"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps { 
+                // Checkout stage: clone the repository from given URL & branch
+                echo("Cloning repository from ${REPO_URL} on branch ${BRANCH_NAME}")
+                sh { 
+                    // Using echo here for demo purposes to avoid actual cloning
+                    script {
+                        echo "git clone -b ${BRANCH_NAME} ${REPO_URL} ."
+                    }
+                }
+            }
+        }
+
+        stage('Build (Node)') {
+            steps {
+                // Build stage: run the configured build tool and steps
+                echo("Using build tool: ${BUILD_TOOL}")
+                sh { 
+                    // Demo placeholder for build command
+                    script {
+                        echo "${BUILD_TOOL} ${BUILD_STEPS}"
+                    }
+                }
+            }
+        }
+
+        stage('Dockerize') {
+            steps {
+                // Dockerization stage: package application into a Docker image
+                echo("Packaging app into Docker image...")
+                sh { 
+                    // Demo placeholder for Docker build
+                    script {
+                        echo "docker build -t myorg/sample:${BRANCH_NAME} ."
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        // Always executed after pipeline completion (success or failure)
+        always { 
+            echo("Pipeline done for ${BRANCH_NAME}")
+        }
+    }
+}
