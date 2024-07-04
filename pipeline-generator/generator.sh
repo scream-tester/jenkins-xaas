@@ -60,6 +60,7 @@ load_yaml_config() {
     BRANCH_NAME_PARAM="$(yaml_get_scalar 'BRANCH_NAME_PARAM' "$file")"
     BUILD_TOOL_PARAM="$(yaml_get_scalar 'BUILD_TOOL_PARAM' "$file")"
     BUILD_STEPS_PARAM="$(yaml_get_scalar 'BUILD_STEPS_PARAM' "$file")"
+    REPO_URL_PARAM="$(yaml_get_scalar 'REPO_URL_PARAM' "$file")"
 }
 
 autodetect_config() {
@@ -86,14 +87,15 @@ autodetect_config() {
 apply_env_overrides() {
     # Allow environment variables to override config file values
     # (useful for Jenkins parameters)
-    if [[ -n "${BRANCH_NAME_PARAM:-}" ]]; then BRANCH_NAME_PARAM="$BRANCH_NAME_PARAM"; fi
-    if [[ -n "${BUILD_TOOL_PARAM:-}" ]]; then BUILD_TOOL_PARAM="$BUILD_TOOL_PARAM";   fi
-    if [[ -n "${BUILD_STEPS_PARAM:-}" ]]; then BUILD_STEPS_PARAM="$BUILD_STEPS_PARAM";             fi
+    if [[ -n "${BRANCH_NAME:-}" ]]; then BRANCH_NAME_PARAM="$BRANCH_NAME"; fi
+    if [[ -n "${BUILD_TOOL:-}"  ]]; then BUILD_TOOL_PARAM="$BUILD_TOOL";   fi
+    if [[ -n "${BUILD_STEPS:-}"       ]]; then BUILD_STEPS_PARAM="$BUILD_STEPS";             fi
+    if [[ -n "${REPO_URL:-}"     ]]; then REPO_URL_PARAM="$REPO_URL"; fi
 }
 
 validate_required() {
     local missing=()
-    for v in BRANCH_NAME_PARAM BUILD_TOOL_PARAM BUILD_STEPS_PARAM; do
+    for v in BRANCH_NAME_PARAM REPO_URL_PARAM BUILD_TOOL_PARAM BUILD_STEPS_PARAM; do
         if [[ -z "${!v:-}" ]]; then missing+=("$v"); fi
     done
     if (( ${#missing[@]} > 0 )); then
@@ -115,14 +117,16 @@ generate() {
     local out="$OUTPUT_DIR/Jenkinsfile"
 
     # Escape values for safe sed replacement
-    local esc_branch esc_tool esc_steps
+    local esc_branch esc_tool esc_BUILD_STEPS_PARAM
     esc_branch="$(escape_for_sed "${BRANCH_NAME_PARAM}")"
     esc_tool="$(escape_for_sed   "${BUILD_TOOL_PARAM}")"
-    esc_steps="$(escape_for_sed  "${BUILD_STEPS_PARAM}")"
+    esc_BUILD_STEPS_PARAM="$(escape_for_sed  "${BUILD_STEPS_PARAM}")"
+    esc_repo="$(escape_for_sed   "${REPO_URL_PARAM}")"
 
     sed -e "s|\${BRANCH_NAME_PARAM}|${esc_branch}|g" \
         -e "s|\${BUILD_TOOL_PARAM}|${esc_tool}|g" \
-        -e "s|\${BUILD_STEPS_PARAM}|${esc_steps}|g" \
+        -e "s|\${BUILD_STEPS_PARAM}|${esc_BUILD_STEPS_PARAM}|g" \
+        -e "s|\${REPO_URL_PARAM}|${esc_repo}|g" \
         "$TEMPLATE_FILE" > "$out"
 
     info "Jenkinsfile generated at: $out"

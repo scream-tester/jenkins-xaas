@@ -1,3 +1,4 @@
 BRANCH_NAME_PARAM: main
 BUILD_TOOL_PARAM: mvn
 BUILD_STEPS_PARAM: clean install
+REPO_URL_PARAM: https://github.com/example/sample-app.git

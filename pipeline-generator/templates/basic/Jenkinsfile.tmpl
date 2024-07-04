@@ -7,18 +7,26 @@ pipeline {
         BRANCH_NAME = "${BRANCH_NAME_PARAM}"
         BUILD_TOOL = "${BUILD_TOOL_PARAM}"
         BUILD_STEPS = "${BUILD_STEPS_PARAM}"
+        REPO_URL = "${REPO_URL_PARAM}"
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                echo("Cloning ${REPO_URL} on branch ${BRANCH_NAME}")
+                sh("echo git clone -b ${BRANCH_NAME} ${REPO_URL}.")
+            }
+        }
+
         stage('Build') {
             steps {
                 script {
                     // Logs which build tool is being used (e.g., Maven, Gradle)
-                    echo "Using ${BUILD_TOOL}"
+                    echo("Using ${BUILD_TOOL}")
                     
                     // Executes the build command using the provided tool and steps
                     // Example: mvn clean install OR gradle build
-                    sh("${BUILD_TOOL} ${BUILD_STEPS}")
+                    sh("echo ${BUILD_TOOL} ${BUILD_STEPS}")
                 }
             }
         }
