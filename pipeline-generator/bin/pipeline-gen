@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# ---------------------------------------------------------------------------
+# pipeline-gen
+# CLI wrapper to run the Jenkins Pipeline Generator from anywhere in the repo.
+# ---------------------------------------------------------------------------
+
+# Exit immediately on error, treat unset variables as errors, and fail on pipe errors
+set -euo pipefail
+
+# Resolve the directory of this script, regardless of where it's called from
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
+# Get the repository root (one directory above bin/)
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Run the actual generator script, passing all CLI args
+exec "$ROOT_DIR/generator.sh" "$@"
