@@ -1,0 +1,5 @@
+# Intentionally bad values for validation testing
+BRANCH_NAME_PARAM: "feature branch with spaces"
+BUILD_TOOL_PARAM: "unknown-tool"
+BUILD_STEPS_PARAM: "clean install"
+REPO_URL_PARAM: "notaurl"
