@@ -1,0 +1,12 @@
+{
+  "name": "Jenkins Codespace",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "jenkins",
+  "forwardPorts": [8080, 50000],
+  "portsAttributes": {
+    "8080": {
+      "label": "Jenkins UI",
+      "onAutoForward": "openBrowser"
+    }
+  }
+}
