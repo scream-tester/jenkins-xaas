@@ -24,12 +24,14 @@ set -euo pipefail
 
 # --- Constants / Defaults ---
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"  
+
 ROOT_DIR="$SCRIPT_DIR"
 LIB_DIR="$ROOT_DIR/lib"
 TEMPLATES_DIR="$ROOT_DIR/templates"
 OUTPUT_DIR="$ROOT_DIR/output"
 CONFIGS_DIR="$ROOT_DIR/configs"
-VERSION_FILE="$ROOT_DIR/VERSION"
+VERSION_FILE="$REPO_ROOT/VERSION"
 
 DEFAULT_ENV_CONFIG="$CONFIGS_DIR/sample_config.env"
 DEFAULT_YAML_CONFIG="$CONFIGS_DIR/sample_config.yaml"
@@ -59,9 +61,9 @@ require_dir()  { [[ -d "$1" ]] || die "Directory not found: $1"; }
 
 version() {
     if [[ -f "$VERSION_FILE" ]]; then
-        printf "pipeline-generator %s\n" "$(cat "$VERSION_FILE")"
+        printf "Jenkins Pipeline Automation Framework %s\n" "$(cat "$VERSION_FILE")"
     else
-        printf "pipeline-generator (version unknown)\n"
+        printf "Jenkins Pipeline Automation Framework (version unknown)\n"
     fi
 }
 
@@ -210,13 +212,13 @@ list_templates() {
 
 print_vars() {
     cat >&2 <<EOF
-[Info]  Resolved parameters:
+[INFO]  Resolved parameters:
         BRANCH_NAME_PARAM="$BRANCH_NAME_PARAM"
         REPO_URL_PARAM="$REPO_URL_PARAM"
         BUILD_TOOL_PARAM="$BUILD_TOOL_PARAM"
         BUILD_STEPS_PARAM="$BUILD_STEPS_PARAM"
-[Info]  Template: $TEMPLATE_NAME ($TEMPLATE_FILE)
-[Info]  Output  : ${PREVIEW_MODE:+<preview>} ${PREVIEW_MODE:+(stdout)}${PREVIEW_MODE:+" "}$([[ $PREVIEW_MODE -eq 0 ]] && printf "%s" "$OUTPUT_FILE")
+[INFO]  Template: $TEMPLATE_NAME ($TEMPLATE_FILE)
+[INFO]  Output  : ${PREVIEW_MODE:+<preview>} ${PREVIEW_MODE:+(stdout)}${PREVIEW_MODE:+" "}$([[ $PREVIEW_MODE -eq 0 ]] && printf "%s" "$OUTPUT_FILE")
 EOF
 }
 
@@ -291,7 +293,8 @@ print_validation_rules
 if ! validate_all "$STRICT_MODE"; then
     die "Validation failed. Fix inputs or use --strict to enforce stricter checks."
 fi
-if (( VALIDATE_ONLY == 1 )); then
+
+if (( VALIDATE_ONLY == 1 )) && (( PREVIEW_MODE == 0 )); then
     info "Validation passed."
     exit 0
 fi

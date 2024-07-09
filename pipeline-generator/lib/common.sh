@@ -4,17 +4,17 @@
 set -o pipefail
 
 die() {
-    echo "[Error] $*" >&2
+    echo "[ERROR] $*" >&2
     exit 1
 }
 
 info() {
     # Send info logs to stderr so stdout can be used for clean previews
-    echo "[Info]  $*" >&2
+    echo "[INFO]  $*" >&2
 }
 
 warn() {
-  echo "[Warn]  $*" >&2
+    echo "[WARN]  $*" >&2
 }
 
 # Escape value for safe sed replacement with '|' delimiter.

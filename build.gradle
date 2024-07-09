@@ -1,0 +1,30 @@
+plugins {
+    id 'groovy'
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+    maven { url 'https://repo.jenkins-ci.org/public/' } // <--- required for groovy-cps
+}
+
+dependencies {
+    implementation 'org.codehaus.groovy:groovy-all:3.0.18'
+    // JUnit
+    testImplementation 'junit:junit:4.13.2'
+
+    // Jenkins Pipeline Unit
+    testImplementation 'com.github.jenkinsci:JenkinsPipelineUnit:1.20'
+
+    // Hamcrest
+    testImplementation 'org.hamcrest:hamcrest-core:1.3'
+}
+
+test {
+    useJUnit()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+

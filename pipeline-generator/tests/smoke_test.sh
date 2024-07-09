@@ -23,8 +23,8 @@ out="$ROOT/output/Jenkinsfile.smoke"
 test -s "$out" && echo "OK: file generated at $out"
 
 echo
-echo "== Validate invalid config (should fail) =="
-if "$GEN" -c "$ROOT/configs/invalid_config.yaml" --validate-only; then
+echo "== Strict Validation invalid config (should fail) =="
+if "$GEN" -c "$ROOT/configs/invalid_config.yaml" --strict; then
     echo "ERROR: invalid config unexpectedly passed!" >&2
     exit 1
 else

@@ -73,7 +73,7 @@ valid_build_steps() {
 
 print_validation_rules() {
     cat >&2 <<'EOF'
-[Info]  Validation rules:
+[INFO]  Validation rules:
         - BRANCH_NAME: letters/digits . _ - / ; no spaces; no trailing '/'
         - REPO_URL   : https/http/ssh or git@host:path form; optional .git
         - BUILD_TOOL : one of: mvn, gradle, npm, yarn, pnpm, make, bash
@@ -103,9 +103,14 @@ validate_all() {
     fi
 
     if (( ok != 0 )); then
-        [[ "$strict" -eq 1 ]] && return 1
-        # Non-strict mode: still fail to protect users (safer default)
-        return 1
+        if [[ "$strict" -eq 1 ]]; then
+            die "Validation failed (strict mode). Aborting."
+        else
+            warn "Validation issues found (non-strict mode). Continuing anyway."
+            return 0   # allow generation
+        fi
     fi
+
+    info "Validation passed."
     return 0
 }
