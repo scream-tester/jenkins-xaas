@@ -3,6 +3,7 @@
  * 
  * Features:
  * - Supports config/template-driven Jenkinsfile generation.
+ * - Deploys generated pipeline to client repository and registers job in Jenkins.
  * 
  * Requirements:
  * - GitHub credentials (HTTPS or SSH).
@@ -24,8 +25,6 @@ pipeline {
             failedValidationMessage: 'CLIENT_NAME cannot be empty',
             description: 'Unique client identifier (used in config path and job name)'
         )
-        // Required parameter to be used later while implementing Jenkinsfile deployment
-        // to client pipeline repository
         validatingString(
             name: 'REPO_URL',
             defaultValue: '',
@@ -75,7 +74,8 @@ pipeline {
     // Environment variables
     environment {
         // GitHub credentials:
-        // - HTTPS token/ SSH token: used for cloning repos
+        // - HTTPS token: used for cloning repos or deploying Jenkinsfiles to client repos.
+        // - SSH token:   typically used for cloning repos.
         GITHUB_HTTPS_TOKEN        = "github-https-token"
         GITHUB_SSH_TOKEN          = "github-ssh-creds"
 
@@ -107,13 +107,12 @@ pipeline {
                     *   → If using HTTPS URL (`https://github.com/...`), use HTTPS token.
                     * - Mixing styles (SSH URL with HTTPS creds or vice versa) will fail.
                     */
-                    dir('jenkins-xaas') {
-                        git(
-                            url: '', // Configure forked repo URL
-                            branch: '', // Configure branch
-                            credentialsId: '' // Configure credsId according to URL style
-                        )
-                    }
+                    cloneRepo(
+                        url: '', // Configure forked repo URL
+                        branch: '', // Configure branch
+                        credsId: '', // Configure credsId according to URL style
+                        targetDir: ''
+                    )
                 }
             }
         }
@@ -143,6 +142,30 @@ pipeline {
                 }
                 failure {
                     echo("Jenkinsfile generation failed. Check logs for details.")
+                }
+            }
+        }
+
+        stage('Deploy Jenkinsfile to GitHub') {
+            when {
+                expression { !(params.VALIDATE_ONLY || params.PREVIEW_MODE) }
+            }
+            steps {
+                // Commit & push generated Jenkinsfile to client repo
+                deployJenkinsfile(
+                    repoUrl: params.REPO_URL,
+                    clientName: params.CLIENT_NAME,
+                    sourceFile: "${JENKINSFILE_GENERATOR_DIR}/${params.OUTPUT_FILE}",
+                    targetBranch: '' // Configure branch in client repo to deploy Jenkinsfile
+                )
+            }
+            // Post Actions
+            post {
+                success {
+                    echo("Jenkinsfile deployed successfully.")
+                }
+                failure {
+                    echo("Jenkinsfile deployment failed. Check logs for details.")
                 }
             }
         }

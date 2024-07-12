@@ -9,6 +9,19 @@ repositories {
     maven { url 'https://repo.jenkins-ci.org/public/' } // <--- required for groovy-cps
 }
 
+sourceSets {
+    main {
+        groovy {
+            srcDirs = ['src/main/groovy', 'src']
+        }
+    }
+    test {
+        groovy {
+            srcDirs = ['src/test/groovy']
+        }
+    }
+}
+
 dependencies {
     implementation 'org.codehaus.groovy:groovy-all:3.0.18'
     // JUnit
