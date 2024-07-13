@@ -290,13 +290,24 @@ select_template "$TEMPLATE_NAME"
 (( PRINT_VARS == 1 )) && print_vars
 
 print_validation_rules
-if ! validate_all "$STRICT_MODE"; then
-    die "Validation failed. Fix inputs or use --strict to enforce stricter checks."
-fi
+if validate_all "$STRICT_MODE"; then
 
-if (( VALIDATE_ONLY == 1 )) && (( PREVIEW_MODE == 0 )); then
-    info "Validation passed."
-    exit 0
-fi
+    info "Validation passed"
+    
+    # Exit early if only validation is requested (no preview)
+    if (( VALIDATE_ONLY == 1 && PREVIEW_MODE == 0 )); then
+        info "Validation passed successfully. No Jenkinsfile generated."
+        exit 0
+    fi
+    
+    if (( PREVIEW_MODE == 1 )); then
+        info "Validation passed. Showing preview."
+    fi
 
-generate
+    generate
+else
+    # Validation failed but not strict mode: skip preview
+    if (( PREVIEW_MODE == 1 )); then
+        info "Validation failed. Not showing preview."
+    fi
+fi

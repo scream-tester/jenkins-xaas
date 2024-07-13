@@ -103,14 +103,15 @@ validate_all() {
     fi
 
     if (( ok != 0 )); then
+        # In strict mode: abort immediately on validation failure
         if [[ "$strict" -eq 1 ]]; then
-            die "Validation failed (strict mode). Aborting."
+            die "Validation failed (strict mode). Fix inputs or use --strict to enforce stricter checks. Aborting..."
         else
+            # In non-strict mode: warn but allow caller to decide next steps
             warn "Validation issues found (non-strict mode). Continuing anyway."
-            return 0   # allow generation
+            return 1
         fi
     fi
 
-    info "Validation passed."
     return 0
 }

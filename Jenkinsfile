@@ -1,14 +1,18 @@
 /*
  * Jenkins pipeline to generate client-specific Jenkinsfiles
+ * and deploy them as executable jobs in Jenkins.
  * 
  * Features:
+ * - Sets build name = CLIENT_NAME and adds job URL in description.
  * - Supports config/template-driven Jenkinsfile generation.
  * - Deploys generated pipeline to client repository and registers job in Jenkins.
  * 
  * Requirements:
  * - GitHub credentials (HTTPS or SSH).
+ * - Jenkins API credentials for job creation and triggering.
  * - Shared library: jenkins-xaas-shared-lib.
  */
+
 
 @Library('jenkins-xaas-shared-lib') _
 
@@ -56,16 +60,31 @@ pipeline {
         string(name: 'BUILD_STEPS', defaultValue: '', description: 'Custom build steps (optional)')
 
         // Flags
-        booleanParam(name: 'PREVIEW_MODE', defaultValue: false, description: 'Preview only (no file write)')
-        booleanParam(name: 'VALIDATE_ONLY', defaultValue: false, description: 'Validate inputs only (no generation)')
+        booleanParam(
+            name: 'PREVIEW_MODE',
+            defaultValue: false,
+            description: 'Preview only (no file will be generated)'
+        )
+
+        booleanParam(
+            name: 'VALIDATE_ONLY',
+            defaultValue: false,
+            description: '''
+                Validate inputs only (no generation). <br/>
+                <span style="color:red; font-weight:bold;">
+                NOTE: When enabled, if build fails, neither a preview will be shown nor an output file will be generated.
+                The build will be marked as unstable.
+                </span>
+            '''
+        )
+
         booleanParam(
             name: 'STRICT_MODE',
             defaultValue: true,
             description: '''
                 Enforce strict validation rules. <br/>
                 <span style="color:red; font-weight:bold;">
-                WARNING: If disabled, the Jenkinsfile will still be generated and job will deployed
-                even if validation fails!
+                NOTE: When enabled, the build will fail on validation errors.
                 </span>
             '''
         )
@@ -78,6 +97,9 @@ pipeline {
         // - SSH token:   typically used for cloning repos.
         GITHUB_HTTPS_TOKEN        = "github-https-token"
         GITHUB_SSH_TOKEN          = "github-ssh-creds"
+
+        // Jenkins API credentials for job creation & triggering
+        JENKINS_API_TOKEN         = "jenkins-api-token"
 
         // Path to Jenkinsfile generator inside checked-out repo
         JENKINSFILE_GENERATOR_DIR = "${WORKSPACE}/jenkins-xaas/pipeline-generator"
@@ -110,8 +132,8 @@ pipeline {
                     cloneRepo(
                         url: '', // Configure forked repo URL
                         branch: '', // Configure branch
-                        credsId: '', // Configure credsId according to URL style
-                        targetDir: ''
+                        credsId: "", // Configure credsId according to URL style
+                        targetDir: 'jenkins-xaas'
                     )
                 }
             }
@@ -143,12 +165,17 @@ pipeline {
                 failure {
                     echo("Jenkinsfile generation failed. Check logs for details.")
                 }
+                unstable {
+                    echo("Generate Jenkinsfile stage unstable. Check logs for details.")
+                }
             }
         }
 
         stage('Deploy Jenkinsfile to GitHub') {
             when {
-                expression { !(params.VALIDATE_ONLY || params.PREVIEW_MODE) }
+                expression { 
+                    !(params.VALIDATE_ONLY || params.PREVIEW_MODE || currentBuild.result == 'UNSTABLE')
+                }
             }
             steps {
                 // Commit & push generated Jenkinsfile to client repo
@@ -168,6 +195,62 @@ pipeline {
                     echo("Jenkinsfile deployment failed. Check logs for details.")
                 }
             }
+        }
+
+        stage('Deploy Client Job & Trigger Build') {
+            when {
+                expression { 
+                    !(params.VALIDATE_ONLY || params.PREVIEW_MODE || currentBuild.result == 'UNSTABLE')
+                }
+            }
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: "${JENKINS_API_TOKEN}",
+                        usernameVariable: 'JENKINS_USER',
+                        passwordVariable: 'JENKINS_API_TOKEN'
+                    )
+                ]) {
+                    // Create/Update Jenkins job for client and trigger initial build
+                    deployClientJob(
+                        clientName: params.CLIENT_NAME,
+                        repoUrl: params.REPO_URL
+                    )
+
+                    script {
+                        // Add clickable job URL to build description
+                        def jobUrl = "${env.JENKINS_URL}job/${params.CLIENT_NAME}-pipeline/"
+                        def pipelineUrl = """${params.REPO_URL}/${params.CLIENT_NAME}/Jenkinsfile"""
+                        currentBuild.description = """
+                            ${params.CLIENT_NAME} Job Jenkinsfile: <a href="${pipelineUrl}">${pipelineUrl}</a><br/>
+                            ${params.CLIENT_NAME} Job URL: <a href="${jobUrl}">${jobUrl}</a>
+                        """
+                    }
+                }
+            }
+            // Post Actions
+            post {
+                success {
+                    echo("Job created and triggered successfully.")
+                }
+                failure {
+                    echo("Job creation failed. Check logs for details.")
+                }
+            }
+        }
+    }
+    post {
+        success {
+            echo("Pipeline completed successfully for ${params.CLIENT_NAME}.")
+        }
+        failure {
+            echo("Pipeline failed for ${params.CLIENT_NAME}. Check logs.")
+        }
+        unstable {
+            echo("Pipeline unstable. Check logs.")
+        }
+        aborted {
+            echo("Pipeline aborted.")
         }
     }
 }

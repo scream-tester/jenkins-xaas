@@ -83,13 +83,18 @@ def call(Map args = [:]) {
 
     echo "[INFO] Running pipeline-gen with arguments: ${cliArgs.join(' ')}"
 
-    sh(
+    def output = sh(
         label: 'Generate Jenkinsfile',
         script: """
             mkdir -p "${workDir}/output"
-            "${workDir}/bin/pipeline-gen" ${cliArgs.join(' ')}
-        """
-    )
+            "${workDir}/bin/pipeline-gen" ${cliArgs.join(' ')} 2>&1
+        """,
+        returnStdout: true
+    ).toString().trim()
 
-    echo "[SUCCESS] Jenkinsfile generated at ${outputFile}"
+    println(output)
+    if (output.contains("Validation issues found")) {
+        currentBuild.result = 'UNSTABLE'
+        unstable("Validation issues found.")
+    }
 }

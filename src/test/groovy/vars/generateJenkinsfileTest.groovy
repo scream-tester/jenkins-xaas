@@ -89,8 +89,7 @@ class GenerateJenkinsfileTest {
             "--set BUILD_STEPS=clean install",
             "--set REPO_URL=https://github.com/org/repo.git",
             "--preview",
-            "--strict",
-            "echo:[SUCCESS] Jenkinsfile generated at /mock/generator/output/Jenkinsfile"
+            "--strict"
         ]
 
         expectedSnippets.each { snippet ->
