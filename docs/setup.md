@@ -124,11 +124,15 @@ chown 1000:1000 /var/jenkins_home/.ssh/known_hosts || true
 
 Edit `Jenkinsfile` in your fork:
 
+- **evvironment block**
+  ```groovy
+  FORK_BRANCH = 'main'     //Enter branch of your forked repo
+  TARGET_BRANCH = 'main'   //Enker branch of repo created for storing Client Jenkinsfile in step 2
+  ```
 - **Stage: Checkout Generator Repository**
     ```groovy
-    url: 'https://github.com/<YOUR_GITHUB_USERNAME>/jenkins-xaas'
-    branch: 'main'
-    credsId: 'github-https-token'
+    url: 'https://github.com/<YOUR_GITHUB_USERNAME>/jenkins-xaas'   //Enter http or ssh url
+    credsId: "${GITHUB_HTTPS_TOKEN}"           //Enter "${GITHUB_HTTPS_TOKEN}" in case of HTTP Url / "${GITHUB_SSH_TOKEN}" for SSH URL
     ```
 - **Stage: Deploy Jenkinsfile to GitHub**
     ```groovy
