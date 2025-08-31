@@ -138,7 +138,7 @@ pipeline {
                     cloneRepo(
                         url: 'https://github.com/scream-tester/jenkins-xaas', // Configure forked repo URL
                         branch: "${FORKED_BRANCH}",
-                        credsId: "", // Configure credsId according to URL style
+                        credsId: "${GITHUB_HTTPS_TOKEN}", // Configure credsId according to URL style
                         targetDir: 'jenkins-xaas'
                     )
                 }
