@@ -31,7 +31,7 @@ pipeline {
         )
         validatingString(
             name: 'REPO_URL',
-            defaultValue: '',
+            defaultValue: 'https://github.com/scream-tester/jenkins-xaas-client-pipelines',
             regex: /^[\S ].*$/, // Must start with a non-space character
             failedValidationMessage: 'REPO_URL cannot be empty',
             description: 'Target client repo URL.'
@@ -136,7 +136,7 @@ pipeline {
                     * - Mixing styles (SSH URL with HTTPS creds or vice versa) will fail.
                     */
                     cloneRepo(
-                        url: '', // Configure forked repo URL
+                        url: 'https://github.com/scream-tester/jenkins-xaas', // Configure forked repo URL
                         branch: "${FORKED_BRANCH}",
                         credsId: "", // Configure credsId according to URL style
                         targetDir: 'jenkins-xaas'
